@@ -1,0 +1,82 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "imdbio"
+version = "0.0.1"
+description = "A Python service for querying IMDb data"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "rjriajul" }]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = [
+    "imdb",
+    "movie",
+    "tv",
+    "api",
+    "scraper",
+    "metadata",
+    "film",
+    "information",
+    "data",
+    "python",
+]
+
+dependencies = [
+    "niquests",
+    "lxml",
+    "pydantic",
+    "jmespath",
+    "deprecated",
+    "imdbinfo-aws",
+]
+license = "MIT"
+
+[project.urls]
+Homepage = "https://rjriajul.github.io/imdbio/"
+Source = "https://github.com/rjriajul/imdbio"
+Issues = "https://github.com/rjriajul/imdbio/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.24",
+    "twine>=5",
+    "poethepoet>=0.32",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["imdbio"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    ".github/",
+    "tests/",
+    ".gitignore",
+]
+
+[tool.poe.tasks]
+test = "pytest --no-header -q"
+build = "uv build"
+publish = "uv publish"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
