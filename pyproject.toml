@@ -45,7 +45,7 @@ dependencies = [
     "pydantic",
     "jmespath",
     "deprecated",
-    "imdbinfo-aws",
+    'curl_cffi'
 ]
 license = "MIT"
 

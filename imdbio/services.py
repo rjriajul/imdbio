@@ -33,7 +33,7 @@ from .parsers import (
     parse_json_parental_guide,
     parse_json_title_media,
 )
-from imdbinfo_aws.aws import AwsSolver
+from .aws import AwsSolver
 
 logger = logging.getLogger(__name__)
 
