@@ -227,7 +227,7 @@ BANDWIDTH_CHALLENGE = "ha9faaffd31b4d5ede2a2e19d2d7fd525f66fee61911511960dcbb52d
 
 class AwsSolver:
 
-    def __init__(self, user_agent, domain):
+    def __init__(self, user_agent, domain, proxies=None):
         self.headers = {
             "connection": "keep-alive",
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -245,6 +245,9 @@ class AwsSolver:
             "user-agent": user_agent,
         }
         self.user_agent = user_agent
+        # Optional proxies mapping ({"http": ..., "https": ...}) forwarded to
+        # every curl_cffi request. None means "no proxy".
+        self.proxies = proxies
         self.domain = f"www.{domain}" if "www" not in domain else domain
 
     def extract(self, html: str):
@@ -256,6 +259,7 @@ class AwsSolver:
         response = requests.get(
             f"https://{host_url}/inputs?client=browser",
             headers=self.headers,
+            proxies=self.proxies,
             timeout=10,
         )
         return response.json()
@@ -359,6 +363,7 @@ class AwsSolver:
                 f"https://{host_url}/mp_verify",
                 headers=self.headers,
                 multipart=mp,
+                proxies=self.proxies,
                 timeout=30,
             )
         else:
@@ -368,6 +373,7 @@ class AwsSolver:
                 f"https://{host_url}/verify",
                 headers=self.headers,
                 json=clean,
+                proxies=self.proxies,
                 timeout=30,
             )
 

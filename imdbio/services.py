@@ -11,6 +11,7 @@ from lxml import html
 from enum import Enum
 from .locale import _retrieve_url_lang, _get_country_code_from_lang_locale
 from .exceptions import HTTPError, WAFError, GraphQLError, ParseError
+from .proxy import get_proxies
 
 from .models import (
     SearchResult,
@@ -129,7 +130,11 @@ def normalize_imdb_id(imdb_id: str, locale: Optional[str] = None):
 def get_cookies(text, user_agent, force=False):
     logger.debug("Starting WAF challenge solver...")
     try:
-        solver = AwsSolver(user_agent=user_agent, domain="www.imdb.com")
+        solver = AwsSolver(
+            user_agent=user_agent,
+            domain="www.imdb.com",
+            proxies=get_proxies(),
+        )
         token = solver.solve(text)
         logger.debug("WAF token successfully obtained")
         return {
@@ -192,7 +197,8 @@ HEADERS = {
 
 def request_handler(url: str) -> Any:
     waf_cookies = _load_waf_cookies()
-    resp = niquests.get(url, headers=HEADERS, cookies=waf_cookies)
+    proxies = get_proxies()
+    resp = niquests.get(url, headers=HEADERS, cookies=waf_cookies, proxies=proxies)
     if resp.status_code == 200:
         return resp
     # Non-200: invalidate cached cookies and request fresh ones
@@ -206,7 +212,7 @@ def request_handler(url: str) -> Any:
         waf_cookies = get_cookies(resp.text, USER_AGENT)
         _save_waf_cookies(waf_cookies)
         logger.debug("WAF cookies refreshed — retrying %s", url)
-        resp = niquests.get(url, headers=HEADERS, cookies=waf_cookies)
+        resp = niquests.get(url, headers=HEADERS, cookies=waf_cookies, proxies=proxies)
         if resp.status_code != 200:
             logger.warning(
                 "Request still non-200 (%s) after WAF cookie refresh for %s — "
@@ -225,7 +231,7 @@ def request_handler(url: str) -> Any:
 
 
 def request_graphql_url(headers, search_term, payload, url) -> Any:
-    resp = niquests.post(url, headers=headers, json=payload)
+    resp = niquests.post(url, headers=headers, json=payload, proxies=get_proxies())
     if resp.status_code != 200:
         logger.error("GraphQL request failed: %s", resp.status_code)
         raise GraphQLError(

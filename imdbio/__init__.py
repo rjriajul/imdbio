@@ -16,6 +16,10 @@ from .services import (
     get_media_gallery,
     TitleType,
 )
+from .proxy import (
+    set_proxy,
+    get_proxy,
+)
 from .models import (
     TitleMediaGallery,
     TitleMediaItem,
@@ -51,6 +55,9 @@ __all__ = [
     "WAFError",
     "GraphQLError",
     "ParseError",
+    # proxy
+    "set_proxy",
+    "get_proxy",
 ]
 
 # setup library logging

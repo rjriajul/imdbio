@@ -50,6 +50,28 @@ for ep in episodes[:3]:
 
 📝 More examples in the [examples](examples/) folder.
 
+## Using a proxy
+
+Route **all** imdbio requests — including the AWS WAF challenge solver — through
+a proxy with `set_proxy`. This is handy for rotating IPs or getting around an IP
+that IMDb's WAF has started blocking (HTTP 202).
+
+```python
+from imdbio import set_proxy, get_movie
+
+# scheme://user:pass@host:port  (credentials optional)
+set_proxy("http://user:pass@proxy.example.com:8080")
+
+movie = get_movie("tt0133093")  # fetched through the proxy
+
+# Disable proxying again
+set_proxy(None)
+```
+
+Supported schemes: `http`, `https`, `socks4`, `socks5`, `socks5h`
+(socks proxies require the socks extras of niquests / curl_cffi). Invalid proxy
+URLs raise `ValueError` immediately. See [examples/example_proxy.py](examples/example_proxy.py).
+
 ## Why choose imdbio?
 
 - Clean structured data via Pydantic models

@@ -40,7 +40,7 @@ keywords = [
 ]
 
 dependencies = [
-    "niquests",
+    "niquests[socks]",
     "lxml",
     "pydantic",
     "jmespath",
