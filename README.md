@@ -1,6 +1,7 @@
 [![PyPI Downloads](https://static.pepy.tech/badge/imdbio)](https://pepy.tech/projects/imdbio)
 [![PyPI Version](https://img.shields.io/pypi/v/imdbio?style=flat-square)](https://pypi.org/project/imdbio/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/imdbio?style=flat-square)](https://pypi.org/project/imdbio/)
+[![Docs](https://img.shields.io/badge/docs-imdbio-blue?style=flat-square)](https://rjriajul.github.io/imdbio/)
 
 # imdbio
 
