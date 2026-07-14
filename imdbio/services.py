@@ -703,7 +703,9 @@ def _get_extended_title_info(imdb_id, locale=None) -> dict:
                    url
                    height
                    width
-                   caption
+                   caption {
+                     plainText
+                   }
                    type
                  }
                }

@@ -888,10 +888,11 @@ def parse_json_title_media(raw_json) -> TitleMediaGallery:
     items = []
     for edge in edges:
         node = edge.get("node") or {}
+        caption_data = node.get("caption") or {}
         items.append(TitleMediaItem(
             id=node.get("id", ""),
             url=node.get("url", ""),
-            caption=node.get("caption"),
+            caption=caption_data.get("plainText") if isinstance(caption_data, dict) else caption_data,
             width=node.get("width"),
             height=node.get("height"),
             type=node.get("type"),
