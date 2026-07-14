@@ -44,10 +44,10 @@ def set_locale(locale: str):
 
 
 def _normalize_locale(lcl: str):
-    if lcl not in SUPPORTED_LOCALES:
-        logger.warning("Locale '%s' is not supported. Using '%s'", lcl, DEFAULT_LOCALE)
-        return DEFAULT_LOCALE
-    return lcl
+    if lcl == "" or lcl in SUPPORTED_LOCALES:
+        return lcl if lcl else DEFAULT_LOCALE
+    logger.warning("Locale '%s' is not supported. Using '%s'", lcl, DEFAULT_LOCALE)
+    return DEFAULT_LOCALE
 
 
 def get_locale():
