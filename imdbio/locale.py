@@ -57,12 +57,12 @@ def get_locale():
 
 
 def _retrieve_url_lang(locale=None):
-    lcl = locale or _configured_locale or DEFAULT_LOCALE
+    lcl = locale if locale is not None else (_configured_locale or DEFAULT_LOCALE)
     lcl = _normalize_locale(lcl)
     return "" if lcl == DEFAULT_LOCALE else lcl
 
 
 def _get_country_code_from_lang_locale(locale=None):
-    lcl = locale or _configured_locale or DEFAULT_LOCALE
+    lcl = locale if locale is not None else (_configured_locale or DEFAULT_LOCALE)
     lcl = _normalize_locale(lcl)
     return LOCALE_TO_COUNTRY_CODE.get(lcl, LOCALE_TO_COUNTRY_CODE[DEFAULT_LOCALE])

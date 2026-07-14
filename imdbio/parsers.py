@@ -295,8 +295,11 @@ def parse_json_movie(raw_json) -> Optional[MovieDetail]:
     data["title_localized"] = pjmespatch(
         "props.pageProps.aboveTheFoldData.titleText.text", raw_json
     )
-    data["title_akas"] = pjmespatch(
-        "props.pageProps.mainColumnData.akas.edges[].node.text", raw_json
+    data["title_akas"] = (
+        pjmespatch(
+            "props.pageProps.mainColumnData.akas.edges[].node.text", raw_json
+        )
+        or []
     )
     data["kind"] = movie_kind
     data["metacritic_rating"] = pjmespatch(
@@ -388,8 +391,12 @@ def parse_json_movie(raw_json) -> Optional[MovieDetail]:
             _parse_directors,
         )
 
-    data["filming_locations"] = pjmespatch(
-        "props.pageProps.mainColumnData.filmingLocations.edges[].node.text", raw_json
+    data["filming_locations"] = (
+        pjmespatch(
+            "props.pageProps.mainColumnData.filmingLocations.edges[].node.text",
+            raw_json,
+        )
+        or []
     )
     data["country_codes"] = pjmespatch(
         "props.pageProps.mainColumnData.countriesDetails.countries[].id", raw_json
@@ -404,9 +411,12 @@ def parse_json_movie(raw_json) -> Optional[MovieDetail]:
         )
         or []
     )
-    data["production"] = pjmespatch(
-        "props.pageProps.mainColumnData.production.edges[].node.company.companyText.text",
-        raw_json,
+    data["production"] = (
+        pjmespatch(
+            "props.pageProps.mainColumnData.production.edges[].node.company.companyText.text",
+            raw_json,
+        )
+        or []
     )
     data["summaries"] = (
         pjmespatch(
@@ -628,24 +638,23 @@ def parse_json_person_detail(raw_json) -> PersonDetail:
     data["imdbId"] = pjmespatch(
         "props.pageProps.aboveTheFold.id", raw_json
     )  # mainColumnData['id']
-    data["id"] = pjmespatch("props.pageProps.mainColumnData.id", raw_json).replace(
-        "nm", ""
-    )
+    raw_id = pjmespatch("props.pageProps.mainColumnData.id", raw_json) or ""
+    data["id"] = raw_id.replace("nm", "")
     data["imdb_id"] = data["id"]  # same as imdb_id
     data["name"] = pjmespatch("props.pageProps.aboveTheFold.nameText.text", raw_json)
     data["url"] = f"https://www.imdb.com/name/{data['imdbId']}/"
     data["knownfor"] = pjmespatch(
         "props.pageProps.mainColumnData.knownForFeatureV2.credits[*].title.titleText.text",
         raw_json,
-    )
+    ) or []
 
-    if data["knownfor"] is None:
+    if not data["knownfor"]:
         # fallback to old knownForFeature if knownForFeatureV2 is empty
         logger.debug("******** Falling back to old  knownForFeature path")
         data["knownfor"] = pjmespatch(
             "props.pageProps.mainColumnData.knownForFeature.edges[].node.title.titleText.text",
             raw_json,
-        )
+        ) or []
 
     data["knownfor2"] = pjmespatch(
         "props.pageProps.mainColumnData.knownForFeatureV2.credits[].[title.id,title.titleText.text,creditedRoles.edges[].node.text]",

@@ -201,11 +201,11 @@ def request_handler(url: str) -> Any:
     resp = niquests.get(url, headers=HEADERS, cookies=waf_cookies, proxies=proxies)
     if resp.status_code == 200:
         return resp
-    # Non-200: invalidate cached cookies and request fresh ones
+    if resp.status_code != 202:
+        return resp
+    # 202 = WAF challenge — solve and retry
     logger.debug(
-        "Non-200 response (%s) for %s — invalidating cached WAF cookies and refreshing",
-        resp.status_code,
-        url,
+        "WAF challenge (202) for %s — solving and retrying", url,
     )
     _delete_waf_cookie_file()
     try:
@@ -253,12 +253,16 @@ def request_graphql_url(headers, search_term, payload, url) -> Any:
     return data
 
 
-@lru_cache(maxsize=128)
 def get_movie(imdb_id: str, locale: Optional[str] = None) -> Optional[MovieDetail]:
     """Fetch movie details from IMDb using the provided IMDb ID as string,
     preserve the 'tt' prefix or not, it will be stripped in the function.
     """
     imdb_id, lang = normalize_imdb_id(imdb_id, locale)
+    return _get_movie_inner(imdb_id, lang)
+
+
+@lru_cache(maxsize=128)
+def _get_movie_inner(imdb_id: str, lang: str) -> Optional[MovieDetail]:
     url = f"https://www.imdb.com{f'/{lang}' if lang else ''}/title/tt{imdb_id}/reference"
     logger.info("Fetching movie %s", imdb_id)
     raw_json = request_json_url(url)
@@ -267,7 +271,6 @@ def get_movie(imdb_id: str, locale: Optional[str] = None) -> Optional[MovieDetai
     return movie
 
 
-@lru_cache(maxsize=128)
 def search_title(
     search_term: str,
     year: int | None = None,
@@ -277,6 +280,18 @@ def search_title(
 ) -> Optional[SearchResult]:
     lang = _retrieve_url_lang(locale)
     country_code = _get_country_code_from_lang_locale(lang)
+    return _search_title_inner(search_term, year, exact_match, lang, country_code, title_type)
+
+
+@lru_cache(maxsize=128)
+def _search_title_inner(
+    search_term: str,
+    year: int | None,
+    exact_match: bool,
+    lang: str,
+    country_code: str,
+    title_type: Optional[TitleFilter],
+) -> Optional[SearchResult]:
 
     search_options_types = ""
     if title_type:
@@ -400,12 +415,16 @@ query {
     return parse_json_search(data)
 
 
-@lru_cache(maxsize=128)
 def get_name(person_id: str, locale: Optional[str] = None) -> Optional[PersonDetail]:
     """Fetch person details from IMDb using the provided IMDb ID.
     Preserve the 'nm' prefix or not, it will be stripped in the function.
     """
     person_id, lang = normalize_imdb_id(person_id, locale)
+    return _get_name_inner(person_id, lang)
+
+
+@lru_cache(maxsize=128)
+def _get_name_inner(person_id: str, lang: str) -> Optional[PersonDetail]:
     url = f"https://www.imdb.com{f'/{lang}' if lang else ''}/name/nm{person_id}/"
     t0 = time()
     logger.info("Fetching person %s", person_id)
@@ -419,12 +438,18 @@ def get_name(person_id: str, locale: Optional[str] = None) -> Optional[PersonDet
     return person
 
 
-@lru_cache(maxsize=128)
 def get_season_episodes(
     imdb_id: str, season=1, locale: Optional[str] = None
 ) -> SeasonEpisodesList:
     """Fetch episodes for a movie or series using the provided IMDb ID."""
     imdb_id, lang = normalize_imdb_id(imdb_id, locale)
+    return _get_season_episodes_inner(imdb_id, season, lang)
+
+
+@lru_cache(maxsize=128)
+def _get_season_episodes_inner(
+    imdb_id: str, season: int, lang: str
+) -> SeasonEpisodesList:
     url = f"https://www.imdb.com{f'/{lang}' if lang else ''}/title/tt{imdb_id}/episodes/?season={season}"
     logger.info("Fetching episodes for movie %s", imdb_id)
     raw_json = request_json_url(url)
@@ -433,18 +458,21 @@ def get_season_episodes(
     return episodes
 
 
-@lru_cache(maxsize=128)
 def get_all_episodes(imdb_id: str, locale: Optional[str] = None):
     series_id, lang = normalize_imdb_id(imdb_id, locale)
+    return _get_all_episodes_inner(series_id, lang)
+
+
+@lru_cache(maxsize=128)
+def _get_all_episodes_inner(series_id: str, lang: str):
     url = f"https://www.imdb.com{f'/{lang}' if lang else ''}/search/title/?count=250&series=tt{series_id}&sort=release_date,asc"
-    logger.info("Fetching bulk episodes for series %s", imdb_id)
+    logger.info("Fetching bulk episodes for series %s", series_id)
     raw_json = request_json_url(url)
     episodes = parse_json_bulked_episodes(raw_json)
-    logger.debug("Fetched %d episodes for series %s", len(episodes), imdb_id)
+    logger.debug("Fetched %d episodes for series %s", len(episodes), series_id)
     return episodes
 
 
-@lru_cache(maxsize=128)
 def get_episodes(
     imdb_id: str, season=1, locale: Optional[str] = None
 ) -> SeasonEpisodesList:

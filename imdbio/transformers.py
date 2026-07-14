@@ -3,13 +3,22 @@ import datetime
 
 def _release_date(result: dict):
     """
-    given a list of lists, convert it to a string with format 'YYYY-MM-DD'
+    Given a dict with year/month/day, convert it to a partial or full date string.
+    Returns partial dates when components are missing (e.g. "2026" or "2026-07").
+    Returns None only if year is missing entirely.
     """
     if result is None:
         return None
-    return datetime.date(
-        result.get("year") or 1, result.get("month") or 1, result.get("day") or 1
-    ).strftime("%Y-%m-%d")
+    year = result.get("year")
+    if year is None:
+        return None
+    month = result.get("month")
+    if month is None:
+        return str(year)
+    day = result.get("day")
+    if day is None:
+        return f"{year}-{month:02d}"
+    return datetime.date(year, month, day).strftime("%Y-%m-%d")
 
 
 def _dict_votes_(result):

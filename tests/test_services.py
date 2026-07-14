@@ -107,7 +107,7 @@ def _make_get_stub(status_code: int, text: str = "", content: bytes = b""):
 def test_http_error_raised_on_non_200(monkeypatch):
     monkeypatch.setattr(services.niquests, "get", _make_get_stub(404, text="not found"))
     with pytest.raises(HTTPError) as exc_info:
-        services.get_movie.cache_clear()
+        services._get_movie_inner.cache_clear()
         services.get_movie("tt9999999")
     err = exc_info.value
     assert err.status_code == 404
@@ -120,7 +120,7 @@ def test_waf_error_raised_on_202(monkeypatch):
         services.niquests, "get", _make_get_stub(202, text="waf challenge")
     )
     with pytest.raises(WAFError) as exc_info:
-        services.get_movie.cache_clear()
+        services._get_movie_inner.cache_clear()
         services.get_movie("tt9999998")
     err = exc_info.value
     assert err.status_code == 202
@@ -145,7 +145,7 @@ def test_parse_error_raised_when_no_next_data(monkeypatch):
         _make_get_stub(200, content=b"<html><body>nothing here</body></html>"),
     )
     with pytest.raises(ParseError) as exc_info:
-        services.get_movie.cache_clear()
+        services._get_movie_inner.cache_clear()
         services.get_movie("tt9999997")
     err = exc_info.value
     assert "tt9999997" in err.url
@@ -160,7 +160,7 @@ def test_graphql_error_raised_on_non_200_post(monkeypatch):
 
     monkeypatch.setattr(services.niquests, "post", stub_post, raising=False)
     with pytest.raises(GraphQLError) as exc_info:
-        services.search_title.cache_clear()
+        services._search_title_inner.cache_clear()
         services.search_title("matrix_test_error")
     err = exc_info.value
     assert err.status_code == 503
@@ -182,7 +182,7 @@ def test_graphql_error_raised_on_errors_payload(monkeypatch):
 
     monkeypatch.setattr(services.niquests, "post", stub_post, raising=False)
     with pytest.raises(GraphQLError) as exc_info:
-        services.search_title.cache_clear()
+        services._search_title_inner.cache_clear()
         services.search_title("matrix_test_gql_err")
     err = exc_info.value
     assert err.status_code is None

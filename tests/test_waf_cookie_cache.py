@@ -139,8 +139,8 @@ def test_request_handler_sends_cached_cookies_on_200(monkeypatch, tmp_path):
     assert services._waf_cookies == cached
 
 
-def test_request_handler_refreshes_cookies_on_non_200(monkeypatch, tmp_path):
-    """Non-200 → old cookies discarded, WAF solver called, new cookies saved & used."""
+def test_request_handler_refreshes_cookies_on_202(monkeypatch, tmp_path):
+    """202 WAF challenge → old cookies discarded, WAF solver called, new cookies saved & used."""
     cookie_file = tmp_path / "waf_cookies.json"
     monkeypatch.setattr(services, "_WAF_COOKIE_FILE", cookie_file)
     monkeypatch.setattr(services, "_waf_cookies", {"aws-waf-token": "old-token"})
@@ -151,7 +151,7 @@ def test_request_handler_refreshes_cookies_on_non_200(monkeypatch, tmp_path):
     def stub_get(url, headers=None, cookies=None, proxies=None):
         call_count["n"] += 1
         if call_count["n"] == 1:
-            return _make_response(403, text="forbidden")
+            return _make_response(202, text="waf challenge")
         return _make_response(200)
 
     monkeypatch.setattr(services.niquests, "get", stub_get)
@@ -172,11 +172,15 @@ def test_request_handler_clears_cookies_when_retry_also_fails(monkeypatch, tmp_p
     monkeypatch.setattr(services, "_WAF_COOKIE_FILE", cookie_file)
     monkeypatch.setattr(services, "_waf_cookies", {"aws-waf-token": "old-token"})
 
-    monkeypatch.setattr(
-        services.niquests,
-        "get",
-        lambda *a, **kw: _make_response(403, text="still blocked"),
-    )
+    call_count = {"n": 0}
+
+    def stub_get(url, headers=None, cookies=None, proxies=None):
+        call_count["n"] += 1
+        if call_count["n"] == 1:
+            return _make_response(202, text="waf challenge")
+        return _make_response(403, text="still blocked")
+
+    monkeypatch.setattr(services.niquests, "get", stub_get)
     monkeypatch.setattr(
         services, "get_cookies", lambda text, ua: {"aws-waf-token": "attempted-token"}
     )
