@@ -386,14 +386,13 @@ def parse_json_movie(raw_json) -> Optional[MovieDetail]:
         raw_json,
         _certificates_to_dict,
     )
-    # TODO is not working 100% need deeper check
     data["mpaa"] = pjmespatch(
-        "props.pageProps.mainColumnData.certificates.edges[?node.ratingsBody.id=='MPAA']",
+        "props.pageProps.mainColumnData.certificates.edges[?node.ratingsBody && node.ratingsBody.id=='MPAA']",
         raw_json,
         _parse_mpaa,
     )
     data["certificate"] = pjmespatch(
-        "props.pageProps.mainColumnData.certificates.edges[?node.ratingsBody.id=='MPAA'] | [0].node.rating",
+        "props.pageProps.mainColumnData.certificates.edges[?node.ratingsBody && node.ratingsBody.id=='MPAA'] | [0].node.rating",
         raw_json,
     )
     data["stars"] = pjmespatch(
