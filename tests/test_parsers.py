@@ -31,6 +31,15 @@ def test_parse_json_movie():
     assert movie.url == "https://www.imdb.com/title/tt0133093/"
     assert movie.release_date == "1999-05-07"
 
+    # Release country
+    assert movie.release_country == "Italy"
+    assert movie.release_country_code == "IT"
+
+    # Box office
+    assert movie.box_office is not None
+    assert "opening_weekend" in movie.box_office
+    assert "domestic" in movie.box_office
+
     # Directors
     assert len(movie.directors) == 2
     assert movie.directors[0].name == "Lana Wachowski"

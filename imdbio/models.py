@@ -300,6 +300,9 @@ class MovieDetail(SeriesMixin, BaseModel):
     production: List[str] = Field(default_factory=list)
     categories: Dict[str, List[Union[Person, CastMember]]] = Field(default_factory=dict)
     company_credits: Dict[str, List[CompanyInfo]] = Field(default_factory=dict)
+    release_country: Optional[str] = None
+    release_country_code: Optional[str] = None
+    box_office: Optional[Dict[str, Optional[str]]] = None
 
     @field_validator(
         "languages",

@@ -315,6 +315,29 @@ def parse_json_movie(raw_json) -> Optional[MovieDetail]:
     data["release_date"] = pjmespatch(
         "props.pageProps.mainColumnData.releaseDate", raw_json, _release_date
     )
+    release_country_data = pjmespatch(
+        "props.pageProps.mainColumnData.releaseDate.country", raw_json
+    )
+    if release_country_data:
+        data["release_country"] = release_country_data.get("text")
+        data["release_country_code"] = release_country_data.get("id")
+    box_office = {}
+    opening = pjmespatch(
+        "props.pageProps.mainColumnData.openingWeekendGross.gross.total.[amount,currency]",
+        raw_json,
+        _join,
+    )
+    if opening:
+        box_office["opening_weekend"] = opening
+    domestic = pjmespatch(
+        "props.pageProps.mainColumnData.lifetimeGross.total.[amount,currency]",
+        raw_json,
+        _join,
+    )
+    if domestic:
+        box_office["domestic"] = domestic
+    if box_office:
+        data["box_office"] = box_office
     data["year"] = pjmespatch(
         "props.pageProps.aboveTheFoldData.releaseYear.year", raw_json
     )
