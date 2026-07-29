@@ -1,3 +1,7 @@
+# Based on imdbinfo (https://github.com/tveronesi/imdbinfo)
+# Copyright (c) 2025 Tiago Veronesi
+# Modifications Copyright (c) 2025 Riajul
+
 from typing import Optional, List, Dict, Tuple, Union
 from pydantic import BaseModel, Field, field_validator
 import logging

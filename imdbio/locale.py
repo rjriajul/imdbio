@@ -1,3 +1,7 @@
+# Based on imdbinfo (https://github.com/tveronesi/imdbinfo)
+# Copyright (c) 2025 Tiago Veronesi
+# Modifications Copyright (c) 2025 Riajul
+
 import logging
 
 logger = logging.getLogger(__name__)

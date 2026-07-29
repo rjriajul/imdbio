@@ -44,6 +44,10 @@ print(results.titles[0].title, results.titles[0].year)
 
 Not affiliated with IMDb Inc. See [DISCLAIMER](DISCLAIMER.txt).
 
+## Attribution
+
+This project is based on [imdbinfo](https://github.com/tveronesi/imdbinfo) by [Tiago Veronesi](https://github.com/tveronesi), licensed under the MIT License. Significant portions of the codebase are derived from the original work. See [LICENSE](LICENSE) for details.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
