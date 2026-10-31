@@ -490,7 +490,7 @@ wheels = [
 
 [[package]]
 name = "imdbio"
-version = "0.0.3"
+version = "0.0.8"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },

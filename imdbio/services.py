@@ -39,6 +39,9 @@ from .parsers import (
     parse_json_title_media,
 )
 from .aws import AwsSolver
+from curl_cffi import requests as curl_requests
+
+IMPERSONATE = "chrome"
 
 logger = logging.getLogger(__name__)
 
@@ -199,10 +202,27 @@ HEADERS = {
 }
 
 
+def _http_get(
+    url: str,
+    cookies: Optional[Dict] = None,
+    proxies: Optional[Dict] = None,
+) -> Any:
+    # The WAF token is bound to the TLS fingerprint it was issued for, so every
+    # request must use the same impersonated Chrome client (curl_cffi).
+    # Plain niquests requests are rejected by IMDb with HTTP 405.
+    return curl_requests.get(
+        url,
+        headers=HEADERS,
+        cookies=cookies,
+        impersonate=IMPERSONATE,
+        proxies=proxies,
+    )
+
+
 def request_handler(url: str) -> Any:
-    waf_cookies = _load_waf_cookies()
     proxies = get_proxies()
-    resp = niquests.get(url, headers=HEADERS, cookies=waf_cookies, proxies=proxies)
+    waf_cookies = _load_waf_cookies()
+    resp = _http_get(url, waf_cookies, proxies)
     if resp.status_code == 200:
         return resp
     if resp.status_code != 202:
@@ -216,7 +236,7 @@ def request_handler(url: str) -> Any:
         waf_cookies = get_cookies(resp.text, USER_AGENT)
         _save_waf_cookies(waf_cookies)
         logger.debug("WAF cookies refreshed — retrying %s", url)
-        resp = niquests.get(url, headers=HEADERS, cookies=waf_cookies, proxies=proxies)
+        resp = _http_get(url, waf_cookies, proxies)
         if resp.status_code != 200:
             logger.warning(
                 "Request still non-200 (%s) after WAF cookie refresh for %s — "

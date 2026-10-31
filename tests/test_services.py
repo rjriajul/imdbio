@@ -38,7 +38,7 @@ def mock_post_factory(filename: str):
 
 def test_get_movie(monkeypatch):
     monkeypatch.setattr(
-        services.niquests, "get", mock_get_factory("sample_resource.json")
+        services, "_http_get", mock_get_factory("sample_resource.json")
     )
     movie = services.get_movie("tt0133093")
     assert movie.title == "The Matrix"
@@ -73,9 +73,7 @@ def test_search_title_includes_rating(monkeypatch):
 
 
 def test_get_name(monkeypatch):
-    monkeypatch.setattr(
-        services.niquests, "get", mock_get_factory("sample_person.json")
-    )
+    monkeypatch.setattr(services, "_http_get", mock_get_factory("sample_person.json"))
     person = services.get_name("nm0000126")
     assert person.name == "Kevin Costner"
     assert "Balla coi lupi" in person.knownfor
@@ -105,7 +103,9 @@ def _make_get_stub(status_code: int, text: str = "", content: bytes = b""):
 
 
 def test_http_error_raised_on_non_200(monkeypatch):
-    monkeypatch.setattr(services.niquests, "get", _make_get_stub(404, text="not found"))
+    monkeypatch.setattr(
+        services, "_http_get", _make_get_stub(404, text="not found")
+    )
     with pytest.raises(HTTPError) as exc_info:
         services._get_movie_inner.cache_clear()
         services.get_movie("tt9999999")
@@ -117,7 +117,7 @@ def test_http_error_raised_on_non_200(monkeypatch):
 
 def test_waf_error_raised_on_202(monkeypatch):
     monkeypatch.setattr(
-        services.niquests, "get", _make_get_stub(202, text="waf challenge")
+        services, "_http_get", _make_get_stub(202, text="waf challenge")
     )
     with pytest.raises(WAFError) as exc_info:
         services._get_movie_inner.cache_clear()
@@ -140,8 +140,8 @@ def test_waf_error_is_subclass_of_http_error():
 def test_parse_error_raised_when_no_next_data(monkeypatch):
     # Return a 200 response whose HTML has no __NEXT_DATA__ script tag
     monkeypatch.setattr(
-        services.niquests,
-        "get",
+        services,
+        "_http_get",
         _make_get_stub(200, content=b"<html><body>nothing here</body></html>"),
     )
     with pytest.raises(ParseError) as exc_info:

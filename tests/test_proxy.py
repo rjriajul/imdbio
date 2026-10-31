@@ -80,17 +80,17 @@ def test_invalid_proxy_does_not_mutate_state():
     assert proxy.get_proxy() == "http://good:8080"
 
 
-# ── proxy is forwarded to niquests ───────────────────────────────────────────
+# ── proxy is forwarded to _http_get ──────────────────────────────────────────
 
 
 def test_request_handler_forwards_proxy(monkeypatch):
     captured = {}
 
-    def fake_get(url, headers=None, cookies=None, proxies=None):
+    def fake_get(url, cookies=None, proxies=None):
         captured["proxies"] = proxies
         return SimpleNamespace(status_code=200, text="", content=b"")
 
-    monkeypatch.setattr(services.niquests, "get", fake_get)
+    monkeypatch.setattr(services, "_http_get", fake_get)
     proxy.set_proxy("http://host:8080")
 
     services.request_handler("https://www.imdb.com/title/tt0133093/reference")
@@ -104,11 +104,11 @@ def test_request_handler_forwards_proxy(monkeypatch):
 def test_request_handler_no_proxy_by_default(monkeypatch):
     captured = {}
 
-    def fake_get(url, headers=None, cookies=None, proxies=None):
+    def fake_get(url, cookies=None, proxies=None):
         captured["proxies"] = proxies
         return SimpleNamespace(status_code=200, text="", content=b"")
 
-    monkeypatch.setattr(services.niquests, "get", fake_get)
+    monkeypatch.setattr(services, "_http_get", fake_get)
 
     services.request_handler("https://www.imdb.com/title/tt0133093/reference")
 
